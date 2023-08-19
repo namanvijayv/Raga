@@ -138,7 +138,7 @@ app.post('/settings', async (req, res) => {
     await newSettings.save();
     res.status(200).json({ message: 'Data Saved successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred' });
+    res.send(error);
   }
 });
 
