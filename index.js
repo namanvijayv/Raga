@@ -6,6 +6,7 @@ const csvWriter = require('csv-write-stream');
 const ftp = require('ftp');
 const bodyParser = require('body-parser');
 const User = require('./models/user.js');
+const Settings = require('./models/settings.js');
 
 app.use(bodyParser.json());
 
@@ -126,6 +127,18 @@ app.post('/change-password', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
+
+app.post('/settings', async (req, res) => {
+  try {
+    const {mold, monitorNumber, systemNumber, core, corePins, PBDDTime, AirInput, shots, fillTime, solidTime, ejectTime, totalTime} = req.body;
+    const newSettings = new Settings({ mold, monitorNumber, systemNumber, core, corePins, PBDDTime, AirInput, shots, fillTime, solidTime, ejectTime, totalTime});
+    await newSettings.save();
+    res.status(200).json({ message: 'Data Saved successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
