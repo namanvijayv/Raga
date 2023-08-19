@@ -15,48 +15,6 @@ const ftpConfig = {
   password: 'HelloWorld',
 };
 
-// Working Route for fetching data
-
-// app.get('/fetch-columns', async (req, res) => {
-//   const ftpClient = new ftp();
-//   ftpClient.on('ready', () => {
-//     // Path to the CSV file on the FTP server
-//     const remoteFilePath = '/RAGA/08-08-2023/RAGA_SEN_DATA.csv';
-    
-//     // Read the CSV file and fetch columns
-//     ftpClient.get(remoteFilePath, (err, stream) => {
-//       if (err) {
-//         res.status(500).json({ error: 'Failed to fetch CSV file from FTP server.' });
-//         return;
-//       }
-
-//       const columns = {};
-
-//       stream
-//         .pipe(csvParser())
-//         .on('data', (row) => {
-//           // Assuming the first row contains column headers
-//           if (!columns.headers) {
-//             columns.headers = Object.keys(row);
-//           }
-
-//           // Store each column's data
-//           for (const col of columns.headers) {
-//             if (!columns[col]) {
-//               columns[col] = [];
-//             }
-//             columns[col].push(row[col]);
-//           }
-//         })
-//         .on('end', () => {
-//           ftpClient.end();
-//           res.json(columns);
-//         });
-//     });
-//   });
-//   ftpClient.connect(ftpConfig);
-// });
-
 // NEW ONE
 
 app.get('/csv-data', async (req, res) => {
@@ -134,7 +92,8 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({companyCode, username , password });
     
     if (user) {
-      res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful',  userId: user._id });
+       // res.json({ userId: user._id });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
