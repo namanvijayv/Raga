@@ -92,7 +92,7 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({companyCode, username , password });
     
     if (user) {
-      res.status(200).json({ message: 'Login successful',  userId: user._id });
+      res.status(200).json({ message: 'Login successful'});
        // res.json({ userId: user._id });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
