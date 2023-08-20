@@ -16,6 +16,48 @@ const ftpConfig = {
   password: 'HelloWorld',
 };
 
+// Working Route for fetching data
+
+// app.get('/fetch-columns', async (req, res) => {
+//   const ftpClient = new ftp();
+//   ftpClient.on('ready', () => {
+//     // Path to the CSV file on the FTP server
+//     const remoteFilePath = '/RAGA/08-08-2023/RAGA_SEN_DATA.csv';
+    
+//     // Read the CSV file and fetch columns
+//     ftpClient.get(remoteFilePath, (err, stream) => {
+//       if (err) {
+//         res.status(500).json({ error: 'Failed to fetch CSV file from FTP server.' });
+//         return;
+//       }
+
+//       const columns = {};
+
+//       stream
+//         .pipe(csvParser())
+//         .on('data', (row) => {
+//           // Assuming the first row contains column headers
+//           if (!columns.headers) {
+//             columns.headers = Object.keys(row);
+//           }
+
+//           // Store each column's data
+//           for (const col of columns.headers) {
+//             if (!columns[col]) {
+//               columns[col] = [];
+//             }
+//             columns[col].push(row[col]);
+//           }
+//         })
+//         .on('end', () => {
+//           ftpClient.end();
+//           res.json(columns);
+//         });
+//     });
+//   });
+//   ftpClient.connect(ftpConfig);
+// });
+
 // NEW ONE
 
 app.get('/csv-data', async (req, res) => {
@@ -40,10 +82,22 @@ app.get('/csv-data', async (req, res) => {
       let inputDiff = 0.5 ;
       let setTemp = 4.55 ;
 
+      const sensorData = {
+        abs_tdf001: [],
+        abs_tdf002: [],
+        abs_tdf003: [],
+        abs_tdf004: [],
+        abs_tdf005: [],
+        abs_tdf006: [],
+        abs_tdf007: [],
+        abs_tdf008: [],
+      };
+
       stream
         .pipe(csvParser())
         .on('data', (row) => {
           // Calculate new value for 'ACTUAL' column
+          const sensorId = row['SENSOR_ID'];
           const flowValue = parseFloat(row['FLOW']);
           const presasueValue = parseFloat(row['PSI']);
           const actualValueFlow = flowValue / 1000;
@@ -73,13 +127,25 @@ app.get('/csv-data', async (req, res) => {
           const runningAverage = (sumOfActualValues / rowCount).toFixed(2);
           row['FLOW_AVERAGE'] = runningAverage ;
 
-          responseData.push(row);
+          // Push row data to the appropriate array
+          if (sensorData[sensorId]) {
+            sensorData[sensorId].push({
+              ...row,
+              ACTUAL: actualValueFlow,
+            });
+          }
         })
         .on('end', () => {
           ftpClient.end();
 
-          // Send the modified response with additional columns
-          res.json(responseData);
+          // Convert the sensorData object into an array of objects
+          const result = Object.keys(sensorData).map((sensorId) => ({
+            SENSOR_ID: sensorId,
+            data: sensorData[sensorId],
+          }));
+
+          // Send the modified response with separate arrays for each SENSOR_ID
+          res.json(result);
         });
     });
   });
@@ -93,8 +159,8 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({companyCode, username , password });
     
     if (user) {
-      res.status(200).json({Message: 'Login Successful', userId: (user._id).toString() });
-       // res.json({ userId: user._id });
+      // res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({Message: 'Login Done', userId: user._id });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -130,7 +196,6 @@ app.post('/change-password', async (req, res) => {
   }
 });
 
-
 app.post('/settings', async (req, res) => {
   try {
     const {mold, monitorNumber, systemNumber, core, corePins, PBDDTime, AirInput, shots, fillTime, solidTime, ejectTime, totalTime} = req.body;
@@ -138,7 +203,7 @@ app.post('/settings', async (req, res) => {
     await newSettings.save();
     res.status(200).json({ message: 'Data Saved successfully' });
   } catch (error) {
-    res.send(error);
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
