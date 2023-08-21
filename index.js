@@ -238,7 +238,7 @@ app.post('/forgot-password', async (req, res) => {
     await user.save();
 
     const mailOptions = {
-      from: 'bamanb30@gmail.com',
+      from: 'blockverseinfotechsolutions@gmail.com',
       to: email,
       subject: 'Password Reset OTP',
       text: `Your OTP for password reset: ${otp}`,
@@ -246,7 +246,7 @@ app.post('/forgot-password', async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    res.json({ message: 'OTP sent to your email' });
+    res.json({ message: 'OTP sent to your email',otp:otp });
   } catch (error) {
     // res.status(500).json({ error: 'An error occurred' });
     res.send(error)
