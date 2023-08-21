@@ -7,6 +7,8 @@ const ftp = require('ftp');
 const bodyParser = require('body-parser');
 const User = require('./models/user.js');
 const Settings = require('./models/settings.js');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 app.use(bodyParser.json());
 
