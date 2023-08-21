@@ -22,7 +22,7 @@ const ftpConfig = {
 //   const ftpClient = new ftp();
 //   ftpClient.on('ready', () => {
 //     // Path to the CSV file on the FTP server
-//     const remoteFilePath = '/RAGA/08-08-2023/RAGA_SEN_DATA.csv';
+//     const remoteFilePath = '/RAGA/21-08-2023/RAGA_21-08-2023.csv';
     
 //     // Read the CSV file and fetch columns
 //     ftpClient.get(remoteFilePath, (err, stream) => {
