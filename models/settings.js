@@ -1,18 +1,18 @@
 const mongoose = require('../db');
 
 const userSchema = new mongoose.Schema({
-  mold: { type: String, required: true },
-  monitorNumber: { type: String, required: true },
-  systemNumber: { type: String, required: true },
-  core: { type: Number, required: true },
-  corePins: { type: Number, required: true },
-  PBDDTime: { type: String, required: true },
-  AirInput: { type: String, required: true },
-  shots: { type: String, required: true },
-  fillTime: { type: String, required: true },
-  solidTime: { type: String, required: true },
-  ejectTime: { type: String, required: true },
-  totalTime: { type: String, required: true },
+  mold: { type: String, required: false },
+  monitorNumber: { type: String, required: false },
+  systemNumber: { type: String, required: false },
+  core: { type: Number, required: false },
+  corePins: { type: Number, required: false },
+  PBDDTime: { type: String, required: false },
+  AirInput: { type: String, required: false },
+  shots: { type: String, required: false },
+  fillTime: { type: String, required: false },
+  solidTime: { type: String, required: false },
+  ejectTime: { type: String, required: false },
+  totalTime: { type: String, required: false },
 }, { collection: 'settings' }); 
 
 const Settings = mongoose.model('Settings', userSchema);
