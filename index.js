@@ -207,6 +207,72 @@ app.post('/settings', async (req, res) => {
   }
 });
 
+// FORGET PASSWORD TRIAL
+
+const transporter = nodemailer.createTransport({
+  service: 'Gmail',
+  auth: {
+    user: 'blockverseinfotechsolutions@gmail.com',
+    pass: 'mtchlizgjeuxuwjc',
+  },
+});
+
+// Generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000);
+};
+// API to send OTP to user's email
+app.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const otp = generateOTP();
+    user.resetToken = otp;
+    await user.save();
+
+    const mailOptions = {
+      from: 'bamanb30@gmail.com',
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Your OTP for password reset: ${otp}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: 'OTP sent to your email' });
+  } catch (error) {
+    // res.status(500).json({ error: 'An error occurred' });
+    res.send(error)
+  }
+});
+
+// API to verify OTP and update password
+app.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email, resetToken: otp });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid OTP or email' });
+    }
+
+    // Hash and update the password
+    user.password = newPassword;
+    user.resetToken = null;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    // res.status(500).json({ error: 'An error occurred' });
+    res.send(error)
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
