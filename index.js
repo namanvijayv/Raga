@@ -62,28 +62,21 @@ const ftpConfig = {
 
 // NEW ONE
 
-app.get('/csv-data', async (req, res) => {
+app.get("/csv-data", async (req, res) => {
   const ftpClient = new ftp();
 
-  ftpClient.on('ready', () => {
+  ftpClient.on("ready", () => {
     // Path to the CSV file on the FTP server
-    const remoteFilePath = '/RAGA/21-08-2023/RAGA_21-08-2023.csv';
+    const remoteFilePath = "/RAGA/21-08-2023/RAGA_21-08-2023.csv";
 
     // Read the existing CSV file and process data
     ftpClient.get(remoteFilePath, (err, stream) => {
       if (err) {
-        // res.status(500).json({ error:'Failed to fetch CSV file from FTP server.' });
-        res.send(err);
-        console.log(err) ;
+        res
+          .status(500)
+          .json({ error: "Failed to fetch CSV file from FTP server." });
         return;
       }
-
-      const responseData = [];
-      let sumOfActualValues = 0;
-      let rowCount = 0;
-      let inputPreasure = 3.05 ;
-      let inputDiff = 0.5 ;
-      let setTemp = 4.55 ;
 
       const sensorData = {
         abs_tdf001: [],
@@ -98,48 +91,63 @@ app.get('/csv-data', async (req, res) => {
 
       stream
         .pipe(csvParser())
-        .on('data', (row) => {
-          // Calculate new value for 'ACTUAL' column
-          const sensorId = row['SENSOR_ID'];
-          const flowValue = parseFloat(row['FLOW']);
-          const presasueValue = parseFloat(row['PSI']);
-          const tempValue = parseFloat(row['TEMP']);
-          const actualValueFlow = (flowValue-820)*0.625;
-          const actualValuePreasure = (presasueValue/27.07)-1.25;
-          const actualValueTemp = (tempValue/24.2)-50;
-          row['ACTUAL FLOW'] = actualValueFlow ;
-          row['ACTUAL PREASURE'] = actualValuePreasure ;
-          row['ACTUAL TEMP'] = actualValueTemp ;
-          let pCalc = (actualValuePreasure-inputPreasure).toFixed(2);
-          row['PREASURE DIFFRENCE'] = pCalc ;  //4.85 -> Given By User
-          if(pCalc > inputDiff){
-            row['PREASURE STATUS'] = "RED"
-          }
-          else{
-            row['PREASURE STATUS'] = "GREEN"
-          }
+        .on("data", (row) => {
+          const sensorId = row["SENSOR_ID"];
+          // const responseData = [];
+          let sumOfActualValues = 0;
+          let rowCount = 0;
+          let inputPreasure = 3.05;
+          let inputDiff = 0.5;
+          let setTemp = 4.55;
 
-          if((setTemp > actualValueTemp) || (setTemp < actualValueTemp)){
-            row['TEMPRATURE STATUS'] = "RED"
+          // Handle "NOT_CNTD" case
+          if (row["REMARK"] === "NOT_CNTD.") {
+            row["ACTUAL FLOW"] = 0;
+            row["ACTUAL PREASURE"] = 0;
+            row["ACTUAL TEMP"] = 0;
+            row["PREASURE DIFFRENCE"] = 0;
+            row["PREASURE STATUS"] = 0;
+            row["TEMPRATURE STATUS"] = 0;
+            row["FLOW_AVERAGE"] = 0;
+          } else {
+            const flowValue = parseFloat(row["FLOW"]);
+            const presasueValue = parseFloat(row["PSI"]);
+            const tempValue = parseFloat(row["TEMP"]);
+            const actualValueFlow = (flowValue - 820) * 0.625;
+            const actualValuePreasure = presasueValue / 27.07 - 1.25;
+            const actualValueTemp = tempValue / 24.2 - 50;
+
+            // Calculate running average
+            sumOfActualValues += actualValueFlow;
+            rowCount++;
+            const runningAverage = (sumOfActualValues / rowCount).toFixed(1);
+
+            row["ACTUAL FLOW"] = actualValueFlow.toFixed(1);
+            row["ACTUAL PREASURE"] = actualValuePreasure.toFixed(1);
+            row["ACTUAL TEMP"] = actualValueTemp.toFixed(1);
+            let pCalc = (actualValuePreasure - inputPreasure).toFixed(1);
+            row["PREASURE DIFFRENCE"] = pCalc; //4.85 -> Given By User
+            if (parseFloat(pCalc) > inputDiff) {
+              row["PREASURE STATUS"] = "RED";
+            } else {
+              row["PREASURE STATUS"] = "GREEN";
+            }
+
+            if (setTemp > actualValueTemp || setTemp < actualValueTemp) {
+              row["TEMPRATURE STATUS"] = "RED";
+            } else {
+              row["TEMPRATURE STATUS"] = "GREEN";
+            }
+
+            row["FLOW_AVERAGE"] = runningAverage;
           }
-          else{
-            row['TEMPRATURE STATUS'] = "GREEN"
-          }
-          // Calculate running average
-          sumOfActualValues += actualValueFlow;
-          rowCount++;
-          const runningAverage = (sumOfActualValues / rowCount).toFixed(2);
-          row['FLOW_AVERAGE'] = runningAverage ;
 
           // Push row data to the appropriate array
           if (sensorData[sensorId]) {
-            sensorData[sensorId].push({
-              ...row,
-              ACTUAL: actualValueFlow,
-            });
+            sensorData[sensorId].push(row);
           }
         })
-        .on('end', () => {
+        .on("end", () => {
           ftpClient.end();
 
           // Convert the sensorData object into an array of objects
@@ -147,18 +155,6 @@ app.get('/csv-data', async (req, res) => {
             SENSOR_ID: sensorId,
             data: sensorData[sensorId],
           }));
-
-          // Convert the sensorData object into an array of objects
-          // const result = Object.keys(sensorData).map((sensorId) => ({
-          //   SENSOR_ID: sensorId,
-          //   data: sensorData[sensorId].length > 0 ? sensorData[sensorId] : [{ ACTUAL FLOW:'-',
-          //       ACTUAL PREASURE: '-',
-          //       ACTUAL TEMP:'-',
-          //       PREASURE DIFFRENCE: '-',
-          //       PREASURE STATUS: '-',
-          //       TEMPRATURE STATUS: '-',
-          //       FLOW_AVERAGE: '-', }],
-          // }));
 
           // Send the modified response with separate arrays for each SENSOR_ID
           res.json(result);
