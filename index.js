@@ -148,6 +148,18 @@ app.get('/csv-data', async (req, res) => {
             data: sensorData[sensorId],
           }));
 
+          // Convert the sensorData object into an array of objects
+          const result = Object.keys(sensorData).map((sensorId) => ({
+            SENSOR_ID: sensorId,
+            data: sensorData[sensorId].length > 0 ? sensorData[sensorId] : [{ ACTUAL FLOW:'-',
+                ACTUAL PREASURE: '-',
+                ACTUAL TEMP:'-',
+                PREASURE DIFFRENCE: '-',
+                PREASURE STATUS: '-',
+                TEMPRATURE STATUS: '-',
+                FLOW_AVERAGE: '-', }],
+          }));
+
           // Send the modified response with separate arrays for each SENSOR_ID
           res.json(result);
         });
