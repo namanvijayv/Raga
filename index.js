@@ -143,10 +143,10 @@ app.get('/csv-data', async (req, res) => {
           ftpClient.end();
 
           // Convert the sensorData object into an array of objects
-          const result = Object.keys(sensorData).map((sensorId) => ({
-            SENSOR_ID: sensorId,
-            data: sensorData[sensorId],
-          }));
+          // const result = Object.keys(sensorData).map((sensorId) => ({
+          //   SENSOR_ID: sensorId,
+          //   data: sensorData[sensorId],
+          // }));
 
           // Convert the sensorData object into an array of objects
           const result = Object.keys(sensorData).map((sensorId) => ({
