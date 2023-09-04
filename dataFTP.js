@@ -150,7 +150,7 @@ app.get('/csv-data', async (req, res) => {
 
   ftpClient.on('ready', () => {
     // Path to the CSV file on the FTP server
-    const remoteFilePath = '/RAGA/02-09-2023/RAGA_02-09-2023.csv';
+    const remoteFilePath = '/RAGA/04-09-2023/RAGA_04-09-2023.csv';
 
     // Read the existing CSV file and process data
     ftpClient.get(remoteFilePath, (err, stream) => {
