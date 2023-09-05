@@ -30,9 +30,10 @@ app.get("/csv-data", async (req, res) => {
     // Read the existing CSV file and process data
     ftpClient.get(remoteFilePath, (err, stream) => {
       if (err) {
-        res
-          .status(500)
-          .json({ error: "Failed to fetch CSV file from FTP server." });
+        // res
+        //   .status(500)
+        //   .json({ error: "Failed to fetch CSV file from FTP server." });
+        res.send(err) ;
         return;
       }
 
