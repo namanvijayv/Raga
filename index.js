@@ -13,44 +13,41 @@ const crypto = require('crypto');
 app.use(bodyParser.json());
 
 const ftpConfig = {
-  host: 'ftp.byethost32.com',
-  user: 'b32_34723087',
+  host: '68.178.145.190',
+  user: 'ftpraga@example.blockverse.co.in',
   password: 'HelloWorld',
 };
 
-// NEW ONE
-
 app.get("/csv-data", async (req, res) => {
-  const ftpClient = new ftp();
-
-  ftpClient.on("ready", () => {
-    // Path to the CSV file on the FTP server
-    const remoteFilePath = "/RAGA/05-09-2023/RAGA_05-09-2023.csv";
-
-    // Read the existing CSV file and process data
-    ftpClient.get(remoteFilePath, (err, stream) => {
-      if (err) {
-        res.status(500).json({ mess: "Failed to fetch CSV file from FTP server." });
-        // res.send(err) ;
-        return;
-      }
-
-      const sensorData = {
-        abs_tdf001: [],
-        abs_tdf002: [],
-        abs_tdf003: [],
-        abs_tdf004: [],
-        abs_tdf005: [],
-        abs_tdf006: [],
-        abs_tdf007: [],
-        abs_tdf008: [],
-      };
-
-      stream
-        .pipe(csvParser())
-        .on("data", (row) => {
-          const sensorId = row["SENSOR_ID"];
-          // const responseData = [];
+    const ftpClient = new ftp();
+  
+    ftpClient.on("ready", () => {
+      // Path to the CSV file on the FTP server
+      const remoteFilePath = "/RAGA/10-09-2023/RAGA_10-09-2023.txt"; // Change the file extension to .txt
+  
+      // Read the existing CSV file and process data
+      ftpClient.get(remoteFilePath, (err, stream) => {
+        if (err) {
+          res.status(500).json({ mess: "Failed to fetch CSV file from FTP server." });
+          return;
+        }
+  
+        const sensorData = {
+          abs_tdf001: [],
+          abs_tdf002: [],
+          abs_tdf003: [],
+          abs_tdf004: [],
+          abs_tdf005: [],
+          abs_tdf006: [],
+          abs_tdf007: [],
+          abs_tdf008: [],
+        };
+  
+        stream
+          .pipe(csvParser()) // This will parse the CSV-formatted data from the text file
+          .on("data", (row) => {
+            const sensorId = row["SENSOR_ID"];
+            // const responseData = [];
           let sumOfActualValues = 0;
           let rowCount = 0;
           let inputPreasure = 3.05;
@@ -103,24 +100,24 @@ app.get("/csv-data", async (req, res) => {
           if (sensorData[sensorId]) {
             sensorData[sensorId].push(row);
           }
-        })
-        .on("end", () => {
-          ftpClient.end();
-
-          // Convert the sensorData object into an array of objects
-          const result = Object.keys(sensorData).map((sensorId) => ({
-            SENSOR_ID: sensorId,
-            data: sensorData[sensorId],
-          }));
-
-          // Send the modified response with separate arrays for each SENSOR_ID
-          res.json(result);
-        });
+          })
+          .on("end", () => {
+            ftpClient.end();
+  
+            // Convert the sensorData object into an array of objects
+            const result = Object.keys(sensorData).map((sensorId) => ({
+              SENSOR_ID: sensorId,
+              data: sensorData[sensorId],
+            }));
+  
+            // Send the modified response with separate arrays for each SENSOR_ID
+            res.json(result);
+          });
+      });
     });
+  
+    ftpClient.connect(ftpConfig);
   });
-
-  ftpClient.connect(ftpConfig);
-});
 
 app.post('/login', async (req, res) => {
   try {
