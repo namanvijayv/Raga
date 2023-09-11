@@ -19,5 +19,8 @@
     "mongoose": "^7.4.2",
     "nodemailer": "^6.9.4",
     "pkg": "^5.8.1"
+  },
+    "engines": {
+    "node": ">=16 <17"
   }
 }
