@@ -62,6 +62,7 @@ app.get("/csv-data", async (req, res) => {
             row["PREASURE DIFFRENCE"] = 0;
             row["PREASURE STATUS"] = 0;
             row["TEMPRATURE STATUS"] = 0;
+            row["FLOW STATUS"] = 0;
             row["FLOW_AVERAGE"] = 0;
           } else {
             const flowValue = parseFloat(row["FLOW"]);
@@ -81,19 +82,29 @@ app.get("/csv-data", async (req, res) => {
             row["ACTUAL TEMP"] = actualValueTemp.toFixed(1);
             let pCalc = (actualValuePreasure - inputPreasure).toFixed(1);
             row["PREASURE DIFFRENCE"] = pCalc; //4.85 -> Given By User
+            row["FLOW_AVERAGE"] = runningAverage;
+            
+            // PREASURE STATUS
             if (parseFloat(pCalc) > inputDiff) {
               row["PREASURE STATUS"] = "RED";
             } else {
               row["PREASURE STATUS"] = "GREEN";
             }
+            
+            // FLOW STATUS
+            if (4<runningAverage && 5>runningAverage) {
+              row["FLOW STATUS"] = "GREEN";
+            } else {
+              row["FLOW STATUS"] = "RED";
+            }
 
+            // TEMPRATURE STATUS
             if (setTemp > actualValueTemp || setTemp < actualValueTemp) {
               row["TEMPRATURE STATUS"] = "RED";
             } else {
               row["TEMPRATURE STATUS"] = "GREEN";
             }
-
-            row["FLOW_AVERAGE"] = runningAverage;
+            
           }
 
           // Push row data to the appropriate array
