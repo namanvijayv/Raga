@@ -55,7 +55,7 @@ app.get("/csv-data", async (req, res) => {
           let setTemp = 4.55;
 
           // Handle "NOT_CNTD" case
-          if (row["REMARK"] === "NOT_CNTD.") {
+          if (row["REMARK"] === "NOT_CNTD") {
             row["ACTUAL FLOW"] = 0;
             row["ACTUAL PREASURE"] = 0;
             row["ACTUAL TEMP"] = 0;
