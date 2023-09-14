@@ -69,8 +69,8 @@ app.get("/csv-data", async (req, res) => {
             const presasueValue = parseFloat(row["PSI"]);
             const tempValue = parseFloat(row["TEMP"]);
             const actualValueFlow = (flowValue - 820) * 0.625;
-            const actualValuePreasure = presasueValue / 27.07 - 1.25;
-            const actualValueTemp = tempValue / 24.2 - 50;
+            const actualValuePreasure = (presasueValue / 27.07) - 1.25;
+            const actualValueTemp = (tempValue / 24.2) - 50;
 
             // Calculate running average
             sumOfActualValues += actualValueFlow;
